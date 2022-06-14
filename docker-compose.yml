@@ -11,7 +11,8 @@ services:
       - POSTGRES_PASSWORD=postgres
   web:
     build: .
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 && python manage.py createsuperuser --noinput"
+    command: bash -c "python manage.py createsuperuser --username root --noinput"
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/code
     ports:
@@ -20,8 +21,7 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - ADMIN_USERNAME=root
-      - ADMIN_EMAIL=root@aluraflix.com
-      - ADMIN_INITIAL_PASSWORD=admin
+      - DJANGO_SUPERUSER_EMAIL=root@asf.tec.br
+      - DJANGO_SUPERUSER_PASSWORD=pass123
     depends_on:
       - db
