@@ -1,17 +1,13 @@
-AWSTemplateFormatVersion: 2010-09-09
-Parameters:
-  InstanceDBHost:
-    Description: IP Address Host EC2
-    Type: String  
+AWSTemplateFormatVersion: 2010-09-09  
 Resources:  
   taskdefinitiondb:
     Type: 'AWS::ECS::TaskDefinition'
     DependsOn:
-      - ECSAluraExecutionRole
-      - ECSAluraTaskRole
+      - ECSAluraExecutionRoleDB
+      - ECSAluraTaskRoleDB
     Properties:
-      TaskRoleArn: !Ref ECSAluraTaskRole
-      ExecutionRoleArn: !Ref ECSAluraExecutionRole
+      TaskRoleArn: !Ref ECSAluraTaskRoleDB
+      ExecutionRoleArn: !Ref ECSAluraExecutionRoleDB
       ContainerDefinitions:
         - Name: db          
           Essential: 'true'
@@ -35,43 +31,6 @@ Resources:
             - Name: POSTGRES_PASSWORD
               Value: 'postgres'
       NetworkMode: bridge
-  taskdefinitionweb:
-    Type: 'AWS::ECS::TaskDefinition'
-    DependsOn:
-      - ECSAluraExecutionRole
-      - ECSAluraTaskRole
-    Properties:
-      TaskRoleArn: !Ref ECSAluraTaskRole
-      ExecutionRoleArn: !Ref ECSAluraExecutionRole
-      ContainerDefinitions:
-        - Name: webapp-aluraflix          
-          Essential: 'true'
-          Image: albertosouzafernandes/alurachallengedevops
-          MemoryReservation: 128
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-create-group: 'True'
-              awslogs-group: aluraflix-logs
-              awslogs-region: !Ref 'AWS::Region'
-              awslogs-stream-prefix: challenge-devops
-          PortMappings:
-            - ContainerPort: 8000
-              HostPort: 8000
-          Environment:
-            - Name: POSTGRES_DB
-              Value: 'postgres'
-            - Name: POSTGRES_USER
-              Value: 'postgres'
-            - Name: POSTGRES_PASSWORD
-              Value: 'postgres'
-            - Name: POSTGRES_HOST
-              Value: !Ref InstanceDBHost  
-            - Name: DJANGO_SUPERUSER_EMAIL
-              Value: 'root@asf.tec.br'
-            - Name: DJANGO_SUPERUSER_PASSWORD
-              Value: 'pass123'
-      NetworkMode: bridge
   servicedb:
     Type: 'AWS::ECS::Service'
     DependsOn:
@@ -80,15 +39,7 @@ Resources:
       Cluster: ClusterAluraChallengeDevOps-ECSCluster-3nbkKFvSrSOy
       DesiredCount: '1'
       TaskDefinition: !Ref taskdefinitiondb
-  AluraChallengeDevOpsWebApp:
-    Type: 'AWS::ECS::Service'
-    DependsOn:
-      - taskdefinitionweb
-    Properties:
-      Cluster: ClusterAluraChallengeDevOps-ECSCluster-3nbkKFvSrSOy
-      DesiredCount: '1'
-      TaskDefinition: !Ref taskdefinitionweb
-  ECSAluraExecutionRole:
+  ECSAluraExecutionRoleDB:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -101,7 +52,7 @@ Resources:
               - 'sts:AssumeRole'
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
-  ECSAluraTaskRole:
+  ECSAluraTaskRoleDB:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
